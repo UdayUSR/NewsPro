@@ -343,6 +343,15 @@ async def api_latest(limit: int = 20):
 async def api_categories():
     return {"categories": get_categories()}
 
+@app.get("/api/health")
+async def health_check():
+    return {
+        "status": "ok",
+        "service": "NewsPro",
+        "timestamp": int(time.time()),
+        "scheduler_mode": scheduler.get_status()["window"]["mode_name_bn"]
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
