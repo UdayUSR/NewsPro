@@ -343,6 +343,33 @@ async def api_latest(limit: int = 20):
 async def api_categories():
     return {"categories": get_categories()}
 
+@app.get("/api/debug-fetch")
+async def debug_fetch():
+    import traceback
+    from engine.scanner import (
+        fetch_prothom_alo, fetch_kaler_kantho, fetch_jugantor,
+        fetch_janakantha, fetch_tbs_bangla, fetch_dhaka_tribune_bangla
+    )
+    fetch_results = {}
+    for name, fn in [
+        ("prothom_alo", fetch_prothom_alo),
+        ("kaler_kantho", fetch_kaler_kantho),
+        ("jugantor", fetch_jugantor),
+        ("janakantha", fetch_janakantha),
+        ("tbs_bangla", fetch_tbs_bangla),
+        ("dhaka_tribune", fetch_dhaka_tribune_bangla)
+    ]:
+        try:
+            items = fn(limit=2, existing_urls=set())
+            fetch_results[name] = {
+                "count": len(items),
+                "items": [{"title": i["title"][:50], "url": i["url"]} for i in items]
+            }
+        except Exception as e:
+            fetch_results[name] = {"error": str(e), "trace": traceback.format_exc()}
+
+    return {"fetch_results": fetch_results}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("web.app:app", host="127.0.0.1", port=8000, reload=True)
