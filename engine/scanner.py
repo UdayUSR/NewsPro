@@ -117,7 +117,7 @@ def fetch_prothom_alo(limit=5, existing_urls=None):
     sections = ['', '/world', '/bangladesh', '/politics']
     for sec in sections:
         try:
-            r = SESSION.get('https://www.prothomalo.com' + sec, timeout=8)
+            r = SESSION.get('https://www.prothomalo.com' + sec, timeout=15)
             soup = BeautifulSoup(r.text, 'html.parser')
             for a in soup.find_all('a', href=True):
                 raw_href = a['href'].strip()
@@ -131,7 +131,7 @@ def fetch_prothom_alo(limit=5, existing_urls=None):
 
     # 2. Stories API & Collections API for broad depth
     try:
-        r2 = SESSION.get('https://www.prothomalo.com/api/v1/stories?offset=0&limit=30', timeout=8)
+        r2 = SESSION.get('https://www.prothomalo.com/api/v1/stories?offset=0&limit=30', timeout=15)
         if r2.status_code == 200:
             for s in r2.json().get('stories', []):
                 slug = s.get('slug')
@@ -139,7 +139,7 @@ def fetch_prothom_alo(limit=5, existing_urls=None):
                     u = f"https://www.prothomalo.com/{slug}"
                     if u not in candidate_urls and u not in existing:
                         candidate_urls.append(u)
-        r1 = SESSION.get('https://www.prothomalo.com/api/v1/collections/latest', timeout=8)
+        r1 = SESSION.get('https://www.prothomalo.com/api/v1/collections/latest', timeout=15)
         if r1.status_code == 200:
             for item in r1.json().get('items', []):
                 slug = item.get('story', {}).get('slug')
@@ -153,7 +153,7 @@ def fetch_prothom_alo(limit=5, existing_urls=None):
     for url in candidate_urls:
         if len(articles) >= limit: break
         try:
-            art_r = SESSION.get(url, timeout=8)
+            art_r = SESSION.get(url, timeout=15)
             h, body, img = extract_from_html(art_r.text, url)
             if body:
                 articles.append({
@@ -174,7 +174,7 @@ def fetch_kaler_kantho(limit=5, existing_urls=None):
     sections = ['', '/online/national', '/online/politics', '/online/business']
     for sec in sections:
         try:
-            r = SESSION.get('https://www.kalerkantho.com' + sec, timeout=8)
+            r = SESSION.get('https://www.kalerkantho.com' + sec, timeout=15)
             soup = BeautifulSoup(r.text, 'html.parser')
             for a in soup.find_all('a', href=True):
                 href = a['href']
@@ -188,7 +188,7 @@ def fetch_kaler_kantho(limit=5, existing_urls=None):
     for url in candidate_urls:
         if len(articles) >= limit: break
         try:
-            art_r = SESSION.get(url, timeout=8)
+            art_r = SESSION.get(url, timeout=15)
             h, body, img = extract_from_html(art_r.text, url)
             if body:
                 articles.append({
@@ -209,7 +209,7 @@ def fetch_jugantor(limit=5, existing_urls=None):
     sections = ['', '/national', '/politics', '/economics']
     for sec in sections:
         try:
-            r = SESSION.get('https://www.jugantor.com' + sec, timeout=8)
+            r = SESSION.get('https://www.jugantor.com' + sec, timeout=15)
             soup = BeautifulSoup(r.text, 'html.parser')
             for a in soup.find_all('a', href=True):
                 href = a['href']
@@ -223,7 +223,7 @@ def fetch_jugantor(limit=5, existing_urls=None):
     for url in candidate_urls:
         if len(articles) >= limit: break
         try:
-            art_r = SESSION.get(url, timeout=8)
+            art_r = SESSION.get(url, timeout=15)
             h, body, img = extract_from_html(art_r.text, url)
             if body:
                 articles.append({
@@ -241,14 +241,14 @@ def fetch_janakantha(limit=5, existing_urls=None):
     existing = existing_urls or set()
     articles = []
     candidate_urls = []
-    sections = ['', '/national', '/politics', '/economics']
+    sections = ['', '/bangladesh', '/politics', '/world', '/economics']
     for sec in sections:
         try:
-            r = SESSION.get('https://www.dailyjanakantha.com' + sec, timeout=8)
+            r = SESSION.get('https://www.dailyjanakantha.com' + sec, timeout=15)
             soup = BeautifulSoup(r.text, 'html.parser')
             for a in soup.find_all('a', href=True):
                 href = a['href']
-                if '/news/' in href and any(c.isdigit() for c in href):
+                if any(c.isdigit() for c in href) and any(k in href for k in ['/news/', '/bangladesh/', '/politics/', '/world/']):
                     full = href if href.startswith('http') else f"https://www.dailyjanakantha.com{href}"
                     if full not in candidate_urls and full not in existing:
                         candidate_urls.append(full)
@@ -258,7 +258,7 @@ def fetch_janakantha(limit=5, existing_urls=None):
     for url in candidate_urls:
         if len(articles) >= limit: break
         try:
-            art_r = SESSION.get(url, timeout=8)
+            art_r = SESSION.get(url, timeout=15)
             h, body, img = extract_from_html(art_r.text, url)
             if body:
                 articles.append({
@@ -279,7 +279,7 @@ def fetch_tbs_bangla(limit=5, existing_urls=None):
     sections = ['/bangla', '/bangla/bangladesh', '/bangla/Economy']
     for sec in sections:
         try:
-            r = SESSION.get('https://www.tbsnews.net' + sec, timeout=8)
+            r = SESSION.get('https://www.tbsnews.net' + sec, timeout=15)
             soup = BeautifulSoup(r.text, 'html.parser')
             for a in soup.find_all('a', href=True):
                 href = a['href']
@@ -293,7 +293,7 @@ def fetch_tbs_bangla(limit=5, existing_urls=None):
     for url in candidate_urls:
         if len(articles) >= limit: break
         try:
-            art_r = SESSION.get(url, timeout=8)
+            art_r = SESSION.get(url, timeout=15)
             h, body, img = extract_from_html(art_r.text, url)
             if body:
                 articles.append({
@@ -314,7 +314,7 @@ def fetch_dhaka_tribune_bangla(limit=5, existing_urls=None):
     sections = ['', '/bangladesh', '/politics', '/court']
     for sec in sections:
         try:
-            r = SESSION.get('https://bangla.dhakatribune.com' + sec, timeout=8)
+            r = SESSION.get('https://bangla.dhakatribune.com' + sec, timeout=15)
             soup = BeautifulSoup(r.text, 'html.parser')
             for a in soup.find_all('a', href=True):
                 href = a['href']
@@ -333,7 +333,7 @@ def fetch_dhaka_tribune_bangla(limit=5, existing_urls=None):
     for url in candidate_urls:
         if len(articles) >= limit: break
         try:
-            art_r = SESSION.get(url, timeout=8)
+            art_r = SESSION.get(url, timeout=15)
             h, body, img = extract_from_html(art_r.text, url)
             if body:
                 articles.append({
@@ -548,10 +548,14 @@ def run_scan_and_stage(limit_per_source=8, max_single_items=6, auto_publish=Fals
         by_source.setdefault(art['source'], []).append(art)
 
     selected_unclustered = []
-    sources_order = list(by_source.keys())
-    for src in sources_order:
-        if by_source[src] and len(selected_unclustered) < max_single_items:
-            selected_unclustered.append(by_source[src].pop(0))
+    while len(selected_unclustered) < max_single_items:
+        added_any = False
+        for src in list(by_source.keys()):
+            if by_source[src] and len(selected_unclustered) < max_single_items:
+                selected_unclustered.append(by_source[src].pop(0))
+                added_any = True
+        if not added_any:
+            break
 
     for art in selected_unclustered:
         print(f"  [+] Synthesizing Single-Source Scoop [{art['source']}]: {art['title'][:40]}")

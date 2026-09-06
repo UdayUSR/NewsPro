@@ -238,10 +238,13 @@ async def admin_scan_news():
     try:
         auto_publish = scheduler.is_auto_publish_enabled()
         window = scheduler.get_status()["window"]
+        # On manual scan, run with deep limits (at least 10 per source, up to 8 single scoops + all clusters)
+        limit_per_source = max(10, window.get("limit_per_source", 10))
+        max_single_items = max(8, window.get("max_single_items", 8))
         summary = await asyncio.to_thread(
             run_scan_and_stage,
-            limit_per_source=window["limit_per_source"],
-            max_single_items=window["max_single_items"],
+            limit_per_source=limit_per_source,
+            max_single_items=max_single_items,
             auto_publish=auto_publish
         )
         multi_text = f"{summary['clusters_found']}টি সমন্বিত বহুমাত্রিক সংবাদ (Multi-Source)" if summary['clusters_found'] else "কোনো বহু-উৎস ক্লাস্টার মেলেনি"

@@ -54,9 +54,9 @@ def get_current_window():
             "badge_color": "text-purple-800 bg-purple-100 border-purple-300",
             "interval_seconds": 60 * 60,
             "interval_minutes": 60,
-            "limit_per_source": 5,
-            "max_single_items": 4,
-            "description": "রাত ১১:০০ - সকাল ৮:৩০: প্রতি ৬০ মিনিটে ৫টি সংবাদের শান্ত রক্ষণাবেক্ষণ স্ক্যান।"
+            "limit_per_source": 8,
+            "max_single_items": 6,
+            "description": "রাত ১১:০০ - সকাল ৮:৩০: প্রতি ৬০ মিনিটে ৮টি সংবাদের শান্ত রক্ষণাবেক্ষণ স্ক্যান।"
         }
 
 class AdaptiveScheduler:
