@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.headline }} | NewsPro{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center space-x-2 text-xs text-gray-500 mb-4">
+        <a href="/" class="hover:text-brand">প্রচ্ছদ</a>
+        <span>/</span>
+        <a href="/category/{{ article.category_slug }}" class="hover:text-brand font-medium text-gray-700">{{ article.category_name }}</a>
+        <span>/</span>
+        <span class="text-gray-400 truncate max-w-xs">{{ article.headline }}</span>
+    </nav>
+
+    <!-- Main Article Card -->
+    <article class="bg-white p-6 sm:p-10 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        
+        <!-- Header Metadata -->
+        <div class="space-y-3 pb-4 border-b border-gray-100">
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="/category/{{ article.category_slug }}" class="bg-brand text-white text-xs font-semibold px-2.5 py-1 rounded">
+                    {{ article.category_name }}
+                </a>
+                {% if article.is_multi_source %}
+                <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded flex items-center space-x-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    <span>সমন্বিত প্রতিবেদন ({{ article.source_count }}টি পত্রিকা থেকে প্রাপ্ত)</span>
+                </span>
+                {% else %}
+                <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded">
+                    একক উৎস প্রতিবেদন
+                </span>
+                {% endif %}
+                <span class="text-gray-400 text-xs">•</span>
+                <span class="text-gray-500 text-xs">{{ article.reading_time_minutes }} মিনিট পাঠের সময়</span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                {{ article.headline }}
+            </h1>
+
+            <!-- Publication Date & Time -->
+            <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 pt-2">
+                <span class="flex items-center space-x-1.5 font-medium text-gray-800 bg-gray-50 px-2.5 py-1 rounded border border-gray-200">
+                    <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    <span>প্রকাশ: {{ article.published_at | format_datetime_bn }}</span>
+                </span>
+                <span class="text-red-700 font-semibold bg-red-50 px-2 py-1 rounded border border-red-100 flex items-center space-x-1">
+                    <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>{{ article.published_at | timeago_bn }}</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Key Takeaways Box (এক নজরে) -->
+        {% if article.key_takeaways %}
+        <div class="bg-gradient-to-r from-red-50 to-orange-50/50 rounded-xl p-5 border border-red-100 shadow-sm">
+            <h3 class="text-xs font-bold text-brand uppercase tracking-wider mb-3 flex items-center space-x-1.5">
+                <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>এক নজরে মূল বিষয়বস্তু (Key Takeaways):</span>
+            </h3>
+            <ul class="space-y-2 text-sm text-gray-800">
+                {% for pt in article.key_takeaways %}
+                <li class="flex items-start space-x-2.5">
+                    <span class="text-brand font-bold text-base leading-none">•</span>
+                    <span class="leading-relaxed">{{ pt }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Body Text -->
+        <div class="prose prose-lg max-w-none text-gray-800 leading-relaxed space-y-4 text-base md:text-lg">
+            {% for para in article.body.split('\n\n') %}
+                {% if para.strip() %}
+                <p class="leading-loose">{{ para.strip() }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Source Attribution Box -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                <h4 class="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3 flex items-center space-x-1.5">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    <span>সংবাদের তথ্যসূত্র ও উৎস লিঙ্ক (Sources & Attribution):</span>
+                </h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {% for src in article.sources %}
+                    <a href="{{ src.source_url }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-brand hover:shadow-sm transition-all group">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2 h-2 rounded-full bg-brand"></span>
+                            <span class="text-sm font-semibold text-gray-900 group-hover:text-brand">{{ src.source_name }}</span>
+                        </div>
+                        <span class="text-xs text-gray-400 group-hover:text-brand">মূল প্রতিবেদন &rarr;</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                <p class="text-[11px] text-gray-400 mt-3">
+                    * এই প্রতিবেদনটি উপরে উল্লিখিত উৎসসমূহের প্রকাশিত খবরের ওপর ভিত্তি করে কৃত্রিম বুদ্ধিমত্তার সহায়তায় বস্তুনিষ্ঠভাবে সমন্বিত ও পুনর্লিখিত হয়েছে।
+                </p>
+            </div>
+        </div>
+
+        <!-- Tags -->
+        {% if article.tags %}
+        <div class="flex flex-wrap items-center gap-2 pt-4">
+            <span class="text-xs font-semibold text-gray-500">ট্যাগ:</span>
+            {% for tag in article.tags %}
+            <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">#{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </article>
+</div>
+{% endblock %}
+

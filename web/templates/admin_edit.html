@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}সংবাদ সম্পাদনা | NewsPro Control Room{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Breadcrumb & Back -->
+    <div class="flex items-center justify-between">
+        <a href="/admin" class="text-sm font-semibold text-gray-500 hover:text-brand flex items-center space-x-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <span>কন্ট্রোল রুমে ফিরে যান</span>
+        </a>
+        <span class="text-xs px-2.5 py-1 rounded font-semibold {% if article.status == 'draft' %}bg-amber-100 text-amber-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+            অবস্থা: {% if article.status == 'draft' %}অপেক্ষমাণ ড্রাফট{% else %}প্রকাশিত{% endif %}
+        </span>
+    </div>
+
+    <!-- Edit Form Card -->
+    <div class="bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">সংবাদ প্রতিবেদন সম্পাদনা</h2>
+            <p class="text-xs text-gray-500 mt-1">শিরোনাম, বিভাগ, এক নজরে পয়েন্ট এবং মূল বিবরণ পরিবর্তন করতে পারেন।</p>
+        </div>
+
+        <form action="/admin/edit/{{ article.id }}" method="POST" class="space-y-6">
+            <!-- Headline -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">শিরোনাম (Headline)</label>
+                <input type="text" name="headline" value="{{ article.headline }}" required class="w-full text-base font-semibold px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand focus:border-transparent">
+            </div>
+
+            <!-- Category Dropdown -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">বিভাগ (Category)</label>
+                <select name="category_id" class="w-full text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand focus:border-transparent">
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id == article.category_id %}selected{% endif %}>
+                        {{ cat.name_bn }} ({{ cat.slug }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Key Takeaways -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                    এক নজরে পয়েন্টসমূহ (Key Takeaways — প্রতি লাইনে একটি পয়েন্ট লিখুন)
+                </label>
+                <textarea name="takeaways_text" rows="4" class="w-full text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand focus:border-transparent leading-relaxed">{% for pt in article.key_takeaways %}{{ pt }}
+{% endfor %}</textarea>
+            </div>
+
+            <!-- Body -->
+            <div>
+                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">মূল বিবরণ (Body Content)</label>
+                <textarea name="body" rows="10" required class="w-full text-sm px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand focus:border-transparent leading-relaxed">{{ article.body }}</textarea>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-100">
+                <a href="/admin" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                    বাতিল
+                </a>
+                <button type="submit" name="action" value="save" class="px-5 py-2.5 text-sm font-semibold text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    পরিবর্তন সংরক্ষণ করুন
+                </button>
+                {% if article.status == 'draft' %}
+                <button type="submit" name="action" value="save_and_publish" class="px-5 py-2.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow transition-colors flex items-center space-x-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>সংরক্ষণ ও প্রকাশ করুন</span>
+                </button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

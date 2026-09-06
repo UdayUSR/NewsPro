@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block title %}নিউজপ্রো কন্ট্রোল রুম | Admin Control Panel{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-7xl mx-auto">
+
+    <!-- Top Dashboard Header & Stats -->
+    <div class="bg-gray-900 text-white p-6 sm:p-8 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <div class="flex items-center space-x-2 text-xs text-red-400 font-semibold uppercase tracking-widest mb-1">
+                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                <span>নিউজপ্রো বার্তা নিয়ন্ত্রণ কক্ষ (Newsroom Operations)</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold">সম্পাদকীয় কন্ট্রোল রুম (Control Panel)</h1>
+            <p class="text-gray-400 text-xs sm:text-sm mt-1">
+                স্বয়ংক্রিয় সংবাদ স্ক্যানিং, ডুপ্লিকেট ক্লাস্টার পর্যবেক্ষণ, সম্পাদনা ও প্রকাশনা ব্যবস্থাপনা।
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Scan Trigger Form -->
+            <form action="/admin/scan" method="POST" onsubmit="document.getElementById('scan-btn').classList.add('opacity-50', 'pointer-events-none'); document.getElementById('scan-spinner').classList.remove('hidden');">
+                <button type="submit" id="scan-btn" class="bg-brand hover:bg-brand-dark text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow flex items-center space-x-2 transition-all">
+                    <svg id="scan-spinner" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <span>নতুন সংবাদ স্ক্যান করুন</span>
+                </button>
+            </form>
+
+            <!-- Publish All Form -->
+            {% if staged_articles %}
+            <form action="/admin/publish-all" method="POST" onsubmit="return confirm('আপনি কি নিশ্চিত যে সকল অপেক্ষমাণ ড্রাফট ({{ staged_articles|length }}টি) এক ক্লিকে প্রকাশ করতে চান?');">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow flex items-center space-x-2 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>সবগুলো প্রকাশ করুন ({{ staged_articles|length }})</span>
+                </button>
+            </form>
+            {% endif %}
+
+            <!-- Logout Link -->
+            <a href="/admin/logout" class="bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white text-sm font-semibold px-3 py-2.5 rounded-lg border border-gray-700 flex items-center space-x-1.5 transition-all" title="কন্ট্রোল রুম থেকে লগআউট">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                <span>লগআউট</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- DUAL AUTOMATION CONTROLS & SCHEDULE STATUS     -->
+    <!-- ============================================== -->
+    <div class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+            <div>
+                <h2 class="text-base sm:text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    <span>অটোমেশন ও পাবলিশিং কন্ট্রোল (Autonomous Automation Controls)</span>
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    ব্যাকগ্রাউন্ড অটো-স্ক্যানার ও সরাসরি লাইভ পাবলিশিং সুইচ। আপনার সুবিধা অনুযায়ী অন/অফ করুন।
+                </p>
+            </div>
+            <!-- Current Status Mode Badge -->
+            <div class="flex items-center gap-2 text-xs">
+                <span class="text-gray-500 font-medium">বর্তমান মোড:</span>
+                <span class="font-semibold px-2.5 py-1 rounded-full border {{ scheduler_status.window.badge_color }}">
+                    {{ scheduler_status.window.mode_name_bn }}
+                </span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+            <!-- Switch 1: Auto-Scanner Toggle -->
+            <div class="bg-gray-50/70 border border-gray-200 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-600">১. অটো-স্ক্যানার (Auto-Scanner)</span>
+                        {% if scheduler_status.auto_scanner_enabled %}
+                            <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                চালু (ON)
+                            </span>
+                        {% else %}
+                            <span class="bg-gray-200 text-gray-600 border border-gray-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                বন্ধ (OFF)
+                            </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-600 mb-4 leading-relaxed">
+                        {% if scheduler_status.auto_scanner_enabled %}
+                            <span class="font-semibold text-emerald-700">স্বয়ংক্রিয় ব্যাকগ্রাউন্ড স্ক্যান চালু আছে।</span> সময়সূচি অনুযায়ী স্বয়ংক্রিয়ভাবে ৬টি পোর্টাল স্ক্র্যাপ করা হবে।
+                        {% else %}
+                            <span class="font-semibold text-gray-700">ব্যাকগ্রাউন্ড স্ক্যান বন্ধ।</span> কেবল উপরে "নতুন সংবাদ স্ক্যান করুন" বাটনে ক্লিক করলেই ম্যানুয়ালি স্ক্যান হবে।
+                        {% endif %}
+                    </p>
+                </div>
+
+                <form action="/admin/settings/toggle-scanner" method="POST">
+                    {% if scheduler_status.auto_scanner_enabled %}
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-xs font-bold transition-all bg-gray-200 hover:bg-red-100 text-gray-700 hover:text-red-700 border border-gray-300 flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>স্ক্যানার বন্ধ করুন (Turn OFF)</span>
+                    </button>
+                    {% else %}
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-xs font-bold transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>অটো-স্ক্যানার চালু করুন (Turn ON)</span>
+                    </button>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Switch 2: Auto-Publish Toggle -->
+            <div class="bg-gray-50/70 border border-gray-200 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-600">২. অটো-পাবলিশ (Auto-Publish)</span>
+                        {% if scheduler_status.auto_publish_enabled %}
+                            <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                সরাসরি লাইভ (ON)
+                            </span>
+                        {% else %}
+                            <span class="bg-amber-100 text-amber-800 border border-amber-300 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                                ড্রাফট কিউ (OFF)
+                            </span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-600 mb-4 leading-relaxed">
+                        {% if scheduler_status.auto_publish_enabled %}
+                            <span class="font-semibold text-emerald-700">স্বয়ংক্রিয় প্রকাশনা চালু।</span> উভয় ক্লাস্টার ও সিঙ্গেল-সোর্স খবর স্ক্যানের সাথে সাথে সরাসরি হোমপেজে প্রকাশিত হবে।
+                        {% else %}
+                            <span class="font-semibold text-amber-700">ড্রাফট কিউ সক্রিয়।</span> সব খবর (মাল্টি ও সিঙ্গেল) নিচে অপেক্ষমাণ ড্রাফট তালিকায় জমা হবে পর্যালোচনার জন্য।
+                        {% endif %}
+                    </p>
+                </div>
+
+                <form action="/admin/settings/toggle-publish" method="POST">
+                    {% if scheduler_status.auto_publish_enabled %}
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-xs font-bold transition-all bg-gray-200 hover:bg-amber-100 text-gray-700 hover:text-amber-800 border border-gray-300 flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        <span>ড্রাফট মোডে রাখুন (Turn OFF)</span>
+                    </button>
+                    {% else %}
+                    <button type="submit" class="w-full py-2 px-3 rounded-lg text-xs font-bold transition-all bg-emerald-600 hover:bg-emerald-700 text-white shadow flex items-center justify-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        <span>সরাসরি লাইভ প্রকাশনা চালু করুন (Turn ON)</span>
+                    </button>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- Schedule Info & Live Status Card -->
+            <div class="bg-gray-50/70 border border-gray-200 rounded-xl p-4 flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-600 block mb-2">৩. শিডিউল ও লাইভ স্ট্যাটাস</span>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between py-1 border-b border-gray-200/60">
+                            <span class="text-gray-500">স্ক্যানিং ফ্রিকোয়েন্সি:</span>
+                            <span class="font-semibold text-gray-900">প্রতি {{ scheduler_status.window.interval_minutes }} মিনিট পর পর</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/60">
+                            <span class="text-gray-500">পোর্টালপ্রতি সংগ্রহ:</span>
+                            <span class="font-semibold text-gray-900">{{ scheduler_status.window.limit_per_source }}টি সংবাদ</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-gray-200/60">
+                            <span class="text-gray-500">সর্বশেষ স্ক্যান:</span>
+                            <span class="font-semibold text-gray-900">{{ scheduler_status.last_run_time_str }}</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="text-gray-500">পরবর্তী স্ক্যান:</span>
+                            {% if scheduler_status.auto_scanner_enabled %}
+                                <span class="font-bold text-brand flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-brand animate-ping"></span>
+                                    {{ scheduler_status.next_run_time_str }}
+                                </span>
+                            {% else %}
+                                <span class="font-semibold text-gray-400">অটো-স্ক্যানার বন্ধ</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3 pt-2 text-[11px] text-gray-500 border-t border-gray-200/60 flex items-center justify-between">
+                    <span>{{ scheduler_status.window.description }}</span>
+                    {% if scheduler_status.is_scanning_now %}
+                    <span class="text-brand font-bold flex items-center gap-1">
+                        <svg class="animate-spin h-3 w-3 text-brand" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        স্ক্যান চলছে...
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase">অপেক্ষমাণ ড্রাফট (Staged Queue)</p>
+                <p class="text-3xl font-bold text-brand mt-1">{{ stats.staged_count }}</p>
+            </div>
+            <div class="p-3 bg-red-50 text-brand rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase">প্রকাশিত লাইভ খবর (Published)</p>
+                <p class="text-3xl font-bold text-emerald-600 mt-1">{{ stats.published_count }}</p>
+            </div>
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase">সংযুক্ত সংবাদপত্র (Active Feeds)</p>
+                <p class="text-3xl font-bold text-gray-800 mt-1">৬টি পোর্টাল</p>
+            </div>
+            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification / Scan Message -->
+    {% if msg %}
+    <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm rounded-xl flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>{{ msg }}</span>
+        </div>
+        <a href="/admin" class="text-xs font-bold text-emerald-700 hover:underline">✕ বন্ধ করুন</a>
+    </div>
+    {% endif %}
+
+    <!-- Tabs: Staged Review Queue vs. Published Articles -->
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="border-b border-gray-200 bg-gray-50/50 px-6 py-3 flex space-x-4">
+            <button onclick="switchTab('staged')" id="tab-btn-staged" class="text-sm font-bold pb-2 border-b-2 border-brand text-brand flex items-center space-x-2 transition-all">
+                <span>১. পর্যালোচনা ও ড্রাফট তালিকা</span>
+                <span class="bg-red-100 text-brand text-xs px-2 py-0.5 rounded-full">{{ staged_articles|length }}</span>
+            </button>
+            <button onclick="switchTab('published')" id="tab-btn-published" class="text-sm font-semibold pb-2 border-b-2 border-transparent text-gray-500 hover:text-gray-900 flex items-center space-x-2 transition-all">
+                <span>২. প্রকাশিত সংবাদ তালিকা</span>
+                <span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full font-bold">{{ stats.published_count }}</span>
+            </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 1: STAGING QUEUE (DRAFTS AWAITING REVIEW) -->
+        <!-- ============================================== -->
+        <div id="tab-staged" class="p-6 space-y-6">
+            {% if staged_articles %}
+                <div class="space-y-4">
+                    {% for art in staged_articles %}
+                    <div class="p-5 bg-white border border-gray-200 rounded-xl shadow-sm hover:border-gray-300 transition-all flex flex-col lg:flex-row justify-between items-start gap-6">
+                        <div class="space-y-3 flex-grow">
+                            <!-- Badges -->
+                            <div class="flex flex-wrap items-center gap-2 text-xs">
+                                <span class="bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded">
+                                    {{ art.category_name }}
+                                </span>
+                                {% if art.is_multi_source %}
+                                <span class="bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded flex items-center space-x-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <span>সমন্বিত প্রতিবেদন ({{ art.source_count }}টি উৎস)</span>
+                                </span>
+                                {% else %}
+                                <span class="bg-blue-50 text-blue-700 font-medium px-2 py-0.5 rounded">
+                                    একক উৎস প্রতিবেদন
+                                </span>
+                                {% endif %}
+                                <span class="text-gray-400">•</span>
+                                <span class="text-gray-500">{{ art.published_at | timeago_bn }} ড্রাফট প্রস্তুত</span>
+                            </div>
+
+                            <!-- Proposed Headline -->
+                            <h3 class="text-lg font-bold text-gray-900 leading-snug">
+                                {{ art.headline }}
+                            </h3>
+
+                            <!-- Key Takeaways Preview -->
+                            {% if art.key_takeaways %}
+                            <div class="bg-red-50/50 p-3 rounded-lg border border-red-100 text-xs text-gray-700 space-y-1">
+                                <span class="font-bold text-brand uppercase text-[10px]">এক নজরে পয়েন্টসমূহ:</span>
+                                {% for pt in art.key_takeaways %}
+                                <div class="flex items-start space-x-1.5">
+                                    <span class="text-brand font-bold">•</span>
+                                    <span>{{ pt }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Body Excerpt -->
+                            <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                                {{ art.body }}
+                            </p>
+
+                            <!-- Sources Cited -->
+                            <div class="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-gray-500">
+                                <span class="font-semibold">উৎসসমূহ:</span>
+                                {% for s in art.sources %}
+                                <a href="{{ s.source_url }}" target="_blank" class="text-brand hover:underline font-medium bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
+                                    {{ s.source_name }} &nearr;
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons (Right) -->
+                        <div class="flex flex-row lg:flex-col gap-2 w-full lg:w-44 flex-shrink-0">
+                            <!-- Publish Individual -->
+                            <form action="/admin/publish/{{ art.id }}" method="POST" class="w-full">
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-sm flex items-center justify-center space-x-1 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    <span>প্রকাশ করুন</span>
+                                </button>
+                            </form>
+
+                            <!-- Edit Individual -->
+                            <a href="/admin/edit/{{ art.id }}" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1 transition-colors">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                <span>সম্পাদনা</span>
+                            </a>
+
+                            <!-- Delete / Dismiss -->
+                            <form action="/admin/delete/{{ art.id }}" method="POST" onsubmit="return confirm('আপনি কি এই সংবাদ ড্রাফটটি মুছে ফেলতে চান?');" class="w-full">
+                                <button type="submit" class="w-full bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold py-2 px-3 rounded-lg flex items-center justify-center space-x-1 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    <span>মুছে ফেলুন</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-16 text-gray-500 space-y-3">
+                    <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto text-gray-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <p class="font-semibold text-gray-700">বর্তমানে কোনো অপেক্ষমাণ সংবাদ ড্রাফট নেই</p>
+                    <p class="text-xs text-gray-400">নতুন খবর আনতে উপরের <span class="font-bold text-brand">"নতুন সংবাদ স্ক্যান করুন"</span> বাটনে ক্লিক করুন।</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: PUBLISHED ARTICLES MANAGEMENT -->
+        <!-- ============================================== -->
+        <div id="tab-published" class="p-6 hidden space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100 text-xs text-gray-500">
+                <span>মোট প্রকাশিত সংবাদ: <strong class="text-gray-900 font-semibold">{{ stats.published_count }}টি</strong> (তালিকায় সর্বশেষ {{ published_articles|length }}টি প্রদর্শিত)</span>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for pub in published_articles %}
+                <div class="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2 text-xs">
+                            <span class="bg-gray-100 text-gray-800 font-semibold px-2 py-0.5 rounded">{{ pub.category_name }}</span>
+                            {% if pub.is_multi_source %}
+                            <span class="bg-emerald-50 text-emerald-700 font-medium px-1.5 py-0.5 rounded text-[11px]">সমন্বিত ({{ pub.source_count }} উৎস)</span>
+                            {% endif %}
+                            <span class="text-gray-400">•</span>
+                            <span class="text-gray-500">{{ pub.published_at | timeago_bn }}</span>
+                        </div>
+                        <h4 class="text-base font-bold text-gray-900 hover:text-brand transition-colors">
+                            <a href="/article/{{ pub.slug }}" target="_blank">{{ pub.headline }}</a>
+                        </h4>
+                    </div>
+
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        <a href="/article/{{ pub.slug }}" target="_blank" class="p-2 text-gray-500 hover:text-brand bg-gray-100 rounded-lg text-xs font-semibold transition-colors" title="ওয়েবসাইটে দেখুন">
+                            সাইটে দেখুন &rarr;
+                        </a>
+                        <a href="/admin/edit/{{ pub.id }}" class="p-2 text-blue-600 hover:text-blue-800 bg-blue-50 rounded-lg text-xs font-semibold transition-colors" title="সম্পাদনা করুন">
+                            সম্পাদনা
+                        </a>
+                        <form action="/admin/delete/{{ pub.id }}" method="POST" onsubmit="return confirm('আপনি কি নিশ্চিত যে এই প্রকাশিত সংবাদটি সাইট থেকে মুছে ফেলতে চান?');">
+                            <button type="submit" class="p-2 text-red-600 hover:text-red-800 bg-red-50 rounded-lg text-xs font-semibold transition-colors" title="মুছে ফেলুন">
+                                ডিলিট
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tab) {
+        const stagedDiv = document.getElementById('tab-staged');
+        const publishedDiv = document.getElementById('tab-published');
+        const stagedBtn = document.getElementById('tab-btn-staged');
+        const publishedBtn = document.getElementById('tab-btn-published');
+
+        if (tab === 'staged') {
+            stagedDiv.classList.remove('hidden');
+            publishedDiv.classList.add('hidden');
+            stagedBtn.classList.add('border-brand', 'text-brand');
+            stagedBtn.classList.remove('border-transparent', 'text-gray-500');
+            publishedBtn.classList.remove('border-brand', 'text-brand');
+            publishedBtn.classList.add('border-transparent', 'text-gray-500');
+        } else {
+            stagedDiv.classList.add('hidden');
+            publishedDiv.classList.remove('hidden');
+            publishedBtn.classList.add('border-brand', 'text-brand');
+            publishedBtn.classList.remove('border-transparent', 'text-gray-500');
+            stagedBtn.classList.remove('border-brand', 'text-brand');
+            stagedBtn.classList.add('border-transparent', 'text-gray-500');
+        }
+    }
+</script>
+{% endblock %}
+

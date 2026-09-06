@@ -1,0 +1,53 @@
+# Environment and Secrets (CRITICAL: Never commit to GitHub)
+.env
+.env.*
+*.env
+!.env.example
+
+# Python Bytecode and Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+.venv/
+ENV/
+env/
+
+# Database Files
+database/*.db
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+*.sqlite3
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary, test, and scratch artifacts
+scratch/
+probe*.py
+check_pair.py
+test_*.py
+seed_more_news.py
+synthesized_*.json
+collected_news.json
+inspect_*.py
+compare_*.py
+list_models.py
+verify_*.py
+aggregate_*.py
+aggregator.py
+synthesize_news.py
+batch_publish.py
+

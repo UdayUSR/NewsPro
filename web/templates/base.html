@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="bn" class="h-full bg-gray-50 text-gray-900 antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NewsPro | বস্তুনিষ্ঠ ও সমন্বিত বাংলা সংবাদ{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans Bengali & Hind Siliguri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans Bengali"', '"Hind Siliguri"', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#DC2626',
+                            dark: '#991B1B',
+                            light: '#FEE2E2',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Noto Sans Bengali', 'Hind Siliguri', system-ui, sans-serif; }
+    </style>
+
+</head>
+<body class="flex flex-col min-h-full">
+
+    <!-- Main Sticky Header Bar (Sleek, Compact, Modern) -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <!-- Top Row: Logo, Live Clock, Live Indicator & Admin Link -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1.5 sm:py-2 flex justify-between items-center">
+            <!-- Brand Logo & Live Clock -->
+            <div class="flex items-center space-x-3 sm:space-x-4">
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="bg-brand text-white font-black text-xl px-2 py-0.5 rounded shadow-sm">NP</div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight text-gray-950">News<span class="text-brand">Pro</span></span>
+                    </div>
+                </a>
+                <!-- Live Datetime Badge directly in the header -->
+                <div class="border-l border-gray-200 pl-3 hidden sm:flex items-center text-xs text-gray-600 font-semibold space-x-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="live-bangla-datetime" class="tracking-tight">রবিবার, ৬ সেপ্টেম্বর ২০২৬ | সন্ধ্যা ৭:০০</span>
+                </div>
+            </div>
+
+            <!-- Right: Quick Live Metric & Admin Portal Link -->
+            <div class="flex items-center space-x-2.5">
+                <div class="flex items-center space-x-1.5 bg-red-50 text-brand px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                    <span class="w-1.5 h-1.5 rounded-full bg-brand animate-ping"></span>
+                    <span class="hidden sm:inline">লাইভ আপডেট সক্রিয়</span>
+                    <span class="sm:hidden">লাইভ</span>
+                </div>
+                <a href="/admin" class="bg-gray-900 hover:bg-brand text-white px-2.5 py-1 rounded text-[11px] font-semibold flex items-center space-x-1 transition-colors">
+                    <svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+                    <span>কন্ট্রোল রুম</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation Bar Row -->
+        <nav class="bg-gray-50/95 border-t border-gray-200 overflow-x-auto scrollbar-none">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-1 py-1 text-xs sm:text-sm font-medium whitespace-nowrap">
+                <!-- Latest / সর্বশেষ Tab (Featured) -->
+                <a href="/latest" class="px-3 py-1 rounded-md font-semibold flex items-center space-x-1 transition-colors {% if active_page == 'latest' %}bg-brand text-white shadow-sm{% else %}bg-brand/10 text-brand hover:bg-brand/20{% endif %}">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>সর্বশেষ</span>
+                </a>
+
+                <!-- 12 Canonical Categories -->
+                {% for cat in categories %}
+                <a href="/category/{{ cat.slug }}" class="px-2.5 py-1 rounded-md transition-colors {% if active_category == cat.slug %}bg-gray-900 text-white font-semibold{% else %}text-gray-700 hover:bg-gray-200 hover:text-gray-900{% endif %}">
+                    {{ cat.name_bn }}
+                </a>
+                {% endfor %}
+            </div>
+        </nav>
+    </header>
+
+
+    <!-- Main Content Area -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 text-sm mt-16 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 text-white font-bold text-xl mb-3">
+                        <span class="bg-brand text-white px-2 py-0.5 rounded text-sm">NP</span>
+                        <span>NewsPro</span>
+                    </div>
+                    <p class="text-xs leading-relaxed text-gray-400">
+                        বাংলাদেশের শীর্ষস্থানীয় ৬টি সংবাদমাধ্যম থেকে স্বয়ংক্রিয়ভাবে সংগৃহীত, যাচাইকৃত এবং সমন্বিত খবরের ডিজিটাল প্ল্যাটফর্ম। নিরপেক্ষতা ও বস্তুনিষ্ঠতাই আমাদের মূল লক্ষ্য।
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-white text-xs font-semibold uppercase tracking-wider mb-3">বিষয়াধীন বিভাগসমূহ</h3>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        {% for cat in categories[:8] %}
+                        <a href="/category/{{ cat.slug }}" class="hover:text-white transition-colors">{{ cat.name_bn }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-white text-xs font-semibold uppercase tracking-wider mb-3">স্বচ্ছতা ও উৎস নীতি</h3>
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        NewsPro প্রতিটি সংবাদে ব্যবহৃত মূল পত্রিকার নাম ও সরাসরি লিংক উল্লেখ করে। আমরা তথ্যের মৌলিকত্ব ও কপিরাইট রক্ষা করে ফেয়ার-ইউজ নীতি অনুসারে সারসংক্ষেপ প্রকাশ করি।
+                    </p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-6 text-center text-xs text-gray-500">
+                &copy; ২০২৬ NewsPro (নিউজপ্রো). সর্বস্বত্ব সংরক্ষিত।
+            </div>
+        </div>
+    </footer>
+    <script>
+    (function() {
+        const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+        const bnDays = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+        const bnMonths = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+        
+        function toBn(num, minDigits = 0) {
+            let s = String(num);
+            if (minDigits > 0) s = s.padStart(minDigits, '0');
+            return s.split('').map(c => bnDigits[c] !== undefined ? bnDigits[c] : c).join('');
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const day = bnDays[now.getDay()];
+            const date = toBn(now.getDate());
+            const month = bnMonths[now.getMonth()];
+            const year = toBn(now.getFullYear());
+            
+            const hours24 = now.getHours();
+            const minutes = toBn(now.getMinutes(), 2);
+            const seconds = toBn(now.getSeconds(), 2);
+            
+            let period = 'সকাল';
+            if (hours24 >= 12 && hours24 < 15) period = 'দুপুর';
+            else if (hours24 >= 15 && hours24 < 18) period = 'বিকাল';
+            else if (hours24 >= 18 && hours24 < 20) period = 'সন্ধ্যা';
+            else if (hours24 >= 20 || hours24 < 6) period = 'রাত';
+            
+            const hours12 = hours24 % 12 || 12;
+            const hoursBn = toBn(hours12);
+            
+            const el = document.getElementById('live-bangla-datetime');
+            if (el) {
+                el.textContent = `${day}, ${date} ${month} ${year} | ${period} ${hoursBn}:${minutes}:${seconds}`;
+            }
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    })();
+    </script>
+</body>
+</html>
+
