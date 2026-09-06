@@ -33,11 +33,38 @@ SESSION.headers.update({
 
 CATEGORIES_LIST = ", ".join(f'"{c[0]}"' for c in CANONICAL_CATEGORIES if c[1] != "latest")
 
-def extract_from_html(resp_text, url):
-    """Extracts headline, clean comprehensive body, and lead image from HTML."""
+def is_article_too_old(date_str, max_hours=24):
+    """Returns True if the publication date is strictly older than max_hours."""
+    if not date_str:
+        return False
+    try:
+        clean = str(date_str).strip()
+        if clean.endswith('Z'):
+            clean = clean[:-1] + '+00:00'
+        if len(clean) == 10 and clean.count('-') == 2:
+            d = datetime.strptime(clean, '%Y-%m-%d').date()
+            now_bd = datetime.now(timezone(timedelta(hours=6))).date()
+            return (now_bd - d).days > 1
+        dt = datetime.fromisoformat(clean)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone(timedelta(hours=6)))
+        now_utc = datetime.now(timezone.utc)
+        diff_hours = (now_utc - dt.astimezone(timezone.utc)).total_seconds() / 3600.0
+        return diff_hours > max_hours
+    except Exception:
+        return False
+
+def extract_from_html(resp_text, url, max_age_hours=24):
+    """Extracts headline, clean comprehensive body, and lead image from HTML, dropping articles >24h old."""
+    # 0. URL Date check (e.g. /YYYY/MM/DD/)
+    m = re.search(r'/(\d{4})/(\d{2})/(\d{2})/', url)
+    if m:
+        if is_article_too_old(f"{m.group(1)}-{m.group(2)}-{m.group(3)}", max_hours=max_age_hours):
+            return None, None, None
+
     soup = BeautifulSoup(resp_text, 'html.parser')
 
-    # 1. Headline
+    # 1. Headline & Date from JSON-LD
     headline = ""
     h1 = soup.find('h1')
     if h1 and len(h1.get_text().strip()) > 10:
@@ -46,6 +73,7 @@ def extract_from_html(resp_text, url):
     ld_headline = ""
     ld_body = ""
     ld_image = ""
+    ld_date = None
     for s in soup.find_all('script', type='application/ld+json'):
         try:
             if not s.string: continue
@@ -55,6 +83,8 @@ def extract_from_html(resp_text, url):
                 if it.get('@type') in ['NewsArticle', 'Article', 'ReportageNewsArticle']:
                     if not ld_headline and it.get('headline'):
                         ld_headline = it.get('headline').strip()
+                    if not ld_date and (it.get('datePublished') or it.get('dateCreated')):
+                        ld_date = it.get('datePublished') or it.get('dateCreated')
                     b = it.get('articleBody') or ''
                     if '&lt;' in b or '<' in b:
                         b = BeautifulSoup(html.unescape(b), 'html.parser').get_text(separator=' ').strip()
@@ -70,6 +100,20 @@ def extract_from_html(resp_text, url):
                             ld_image = img_val[0]
         except Exception:
             pass
+
+    # Meta date check
+    meta_date_tag = soup.find('meta', property=re.compile(r'published_time|pubdate|release_date', re.I)) or \
+                    soup.find('meta', attrs={'name': re.compile(r'published_time|pubdate|date', re.I)})
+    meta_date = meta_date_tag.get('content') if meta_date_tag else None
+
+    # Time tag check
+    time_tag = soup.find('time')
+    time_date = time_tag.get('datetime') if time_tag else None
+
+    # 24-Hour freshness gate
+    pub_date = ld_date or meta_date or time_date
+    if pub_date and is_article_too_old(pub_date, max_hours=max_age_hours):
+        return None, None, None
 
     if not headline:
         headline = ld_headline

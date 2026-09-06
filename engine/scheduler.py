@@ -50,13 +50,13 @@ def get_current_window():
     else:
         return {
             "mode_id": "night",
-            "mode_name_bn": "রাতের মেইনটেন্যান্স (Overnight)",
+            "mode_name_bn": "রাতের নিয়মিত স্ক্যান (Overnight)",
             "badge_color": "text-purple-800 bg-purple-100 border-purple-300",
-            "interval_seconds": 60 * 60,
-            "interval_minutes": 60,
+            "interval_seconds": 30 * 60,
+            "interval_minutes": 30,
             "limit_per_source": 8,
-            "max_single_items": 6,
-            "description": "রাত ১১:০০ - সকাল ৮:৩০: প্রতি ৬০ মিনিটে ৮টি সংবাদের শান্ত রক্ষণাবেক্ষণ স্ক্যান।"
+            "max_single_items": 8,
+            "description": "রাত ১১:০০ - সকাল ৮:৩০: প্রতি ৩০ মিনিটে ৮টি সংবাদের নিয়মিত স্ক্যান।"
         }
 
 class AdaptiveScheduler:
