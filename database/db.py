@@ -4,6 +4,9 @@ import os
 import re
 import sys
 from datetime import datetime
+from dotenv import load_dotenv
+
+load_dotenv()
 
 if sys.platform == 'win32':
     sys.stdout.reconfigure(encoding='utf-8')

@@ -343,6 +343,36 @@ async def api_latest(limit: int = 20):
 async def api_categories():
     return {"categories": get_categories()}
 
+@app.get("/api/db-status")
+async def db_status():
+    turso_url = os.getenv("TURSO_DATABASE_URL")
+    turso_token = os.getenv("TURSO_AUTH_TOKEN")
+    err = None
+    connected = False
+    article_count = 0
+    backend = "sqlite_local"
+    try:
+        from database.db import get_db
+        conn = get_db()
+        if hasattr(conn, "_raw"):
+            backend = "turso_cloud"
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) as c FROM articles")
+        article_count = cur.fetchone()["c"]
+        connected = True
+        conn.close()
+    except Exception as e:
+        err = str(e)
+    return {
+        "has_turso_url": bool(turso_url),
+        "url_prefix": turso_url[:15] if turso_url else None,
+        "has_turso_token": bool(turso_token),
+        "backend": backend,
+        "connected": connected,
+        "article_count": article_count,
+        "error": err
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
