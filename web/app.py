@@ -368,7 +368,51 @@ async def debug_fetch():
         except Exception as e:
             fetch_results[name] = {"error": str(e), "trace": traceback.format_exc()}
 
-    return {"fetch_results": fetch_results}
+    import requests as std_requests
+    from engine.scanner import SESSION
+
+    raw_tests = {}
+    for name, u in [
+        ("kaler_kantho", "https://www.kalerkantho.com"),
+        ("jugantor", "https://www.jugantor.com"),
+        ("janakantha", "https://www.dailyjanakantha.com"),
+        ("dhaka_tribune", "https://bangla.dhakatribune.com"),
+    ]:
+        try:
+            r = SESSION.get(u, timeout=12)
+            raw_tests[name] = {
+                "status": r.status_code,
+                "length": len(r.text),
+                "server": r.headers.get("server", ""),
+                "sample": r.text[:200]
+            }
+        except Exception as e:
+            raw_tests[name] = {"error": str(e)}
+
+    std_tests = {}
+    for name, u in [
+        ("kaler_kantho", "https://www.kalerkantho.com"),
+        ("jugantor", "https://www.jugantor.com"),
+        ("janakantha", "https://www.dailyjanakantha.com"),
+        ("dhaka_tribune", "https://bangla.dhakatribune.com"),
+    ]:
+        try:
+            r = std_requests.get(u, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, timeout=12)
+            std_tests[name] = {
+                "status": r.status_code,
+                "length": len(r.text),
+                "server": r.headers.get("server", ""),
+                "sample": r.text[:200]
+            }
+        except Exception as e:
+            std_tests[name] = {"error": str(e)}
+
+    return {
+        "fetch_results": fetch_results,
+        "curl_cffi_raw": raw_tests,
+        "std_requests_raw": std_tests
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
