@@ -391,11 +391,9 @@ async def debug_fetch():
 
     alt_tests = {}
     for site, u in [
-        ("samakal", "https://samakal.com"),
-        ("ittefaq", "https://www.ittefaq.com.bd"),
         ("banglanews24", "https://www.banglanews24.com"),
-        ("bonikbarta", "https://bonikbarta.net"),
-        ("mzamin", "https://mzamin.com"),
+        ("dhakapost", "https://www.dhakapost.com"),
+        ("bbc_bangla", "https://www.bbc.com/bengali"),
     ]:
         try:
             r = std_requests.get(u, headers={"User-Agent": "facebookexternalhit/1.1"}, timeout=8)
