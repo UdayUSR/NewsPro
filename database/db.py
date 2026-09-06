@@ -115,13 +115,22 @@ class LibsqlConnectionWrapper:
         return cur
 
     def commit(self):
-        self._conn.commit()
+        try:
+            self._conn.commit()
+        except Exception:
+            pass
 
     def rollback(self):
-        self._conn.rollback()
+        try:
+            self._conn.rollback()
+        except Exception:
+            pass
 
     def close(self):
-        self._conn.close()
+        try:
+            self._conn.close()
+        except Exception:
+            pass
 
 def get_db():
     turso_url = os.getenv("TURSO_DATABASE_URL")
@@ -129,7 +138,7 @@ def get_db():
     if turso_url and turso_token:
         try:
             import libsql
-            raw_conn = libsql.connect(turso_url, auth_token=turso_token)
+            raw_conn = libsql.connect(turso_url, auth_token=turso_token, autocommit=True)
             return LibsqlConnectionWrapper(raw_conn)
         except Exception as e:
             print(f"[!] Failed to connect to Turso ({e}), falling back to local SQLite.")
@@ -627,7 +636,13 @@ def get_all_ingested_urls():
             urls.add(u.rstrip("/") + "/")
     return urls
 
-def is_title_duplicate(headline, threshold=0.55):
+def get_all_existing_headlines():
+    conn = get_db()
+    rows = conn.execute("SELECT headline FROM articles").fetchall()
+    conn.close()
+    return [r["headline"] for r in rows]
+
+def is_title_duplicate(headline, threshold=0.55, existing_headlines=None):
     """
     Checks if a headline strongly overlaps with any existing article in the database.
     Uses token-level Jaccard similarity.
@@ -642,12 +657,14 @@ def is_title_duplicate(headline, threshold=0.55):
     if not tokens_query:
         return False
 
-    conn = get_db()
-    rows = conn.execute("SELECT headline FROM articles").fetchall()
-    conn.close()
+    if existing_headlines is None:
+        conn = get_db()
+        rows = conn.execute("SELECT headline FROM articles").fetchall()
+        conn.close()
+        existing_headlines = [r["headline"] for r in rows]
 
-    for r in rows:
-        existing_words = re.findall(r'[\u0980-\u09FF]+', r["headline"])
+    for existing_title in existing_headlines:
+        existing_words = re.findall(r'[\u0980-\u09FF]+', existing_title)
         tokens_existing = set(w for w in existing_words if len(w) > 2 and w not in stopwords)
         overlap = tokens_query.intersection(tokens_existing)
         union = tokens_query.union(tokens_existing)

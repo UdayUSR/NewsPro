@@ -19,7 +19,7 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-from database.db import save_article, CANONICAL_CATEGORIES, get_all_ingested_urls, is_title_duplicate
+from database.db import save_article, CANONICAL_CATEGORIES, get_all_ingested_urls, is_title_duplicate, get_all_existing_headlines
 
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -506,6 +506,7 @@ def run_scan_and_stage(limit_per_source=8, max_single_items=6, auto_publish=Fals
     target_status = "published" if auto_publish else "draft"
     print(f"[*] Starting news scan (depth: {limit_per_source}/portal, auto_publish: {auto_publish}, status: {target_status})...")
     existing_urls = get_all_ingested_urls()
+    existing_headlines = get_all_existing_headlines()
     
     all_articles = []
     fetchers = [
@@ -528,7 +529,7 @@ def run_scan_and_stage(limit_per_source=8, max_single_items=6, auto_publish=Fals
         u = art.get('url', '').strip()
         if not u or u in existing_urls or u in seen_fresh_urls:
             continue
-        if is_title_duplicate(art.get('title', '')):
+        if is_title_duplicate(art.get('title', ''), existing_headlines=existing_headlines):
             continue
         seen_fresh_urls.add(u)
         fresh_articles.append(art)
