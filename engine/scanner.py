@@ -621,8 +621,7 @@ def run_scan_and_stage(limit_per_source=8, max_single_items=6, auto_publish=Fals
         fetch_jugantor,
         fetch_tbs_bangla,
         fetch_banglanews24,
-        fetch_bbc_bangla,
-        fetch_dhaka_post
+        fetch_bbc_bangla
     ]
     for fetcher in fetchers:
         all_articles.extend(fetcher(limit=limit_per_source, existing_urls=existing_urls))

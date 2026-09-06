@@ -69,7 +69,7 @@ Normal Python `requests` or `urllib` calls fail with **403 Forbidden** on Cloudf
 | **যুগান্তর (Jugantor)** | Category links: `/(national\|politics\|sports)/\d+` | H1 tag + clean `<p>` tags (excluding ads) | Facebook bot crawler UA bypass |
 | **টিবিএস বাংলা (TBS Bangla)** | Links matching `/bangla/` and `news-details` | H1 tag + `<p>` tags (excluding boilerplate) | Open / Direct HTTP 200 |
 | **বাংলানিউজ২৪ (Banglanews24)** | Category feeds matching `news/bd/` and `.details` | H1 tag + article `<p>` text tags (2,000+ chars) | Open / Direct HTTP 200 |
-| **ঢাকা পোস্ট (Dhaka Post)** | Sections matching `/(national\|politics\|economy)/\d+` | H1 tag + in-depth editorial `<p>` tags (5,000+ chars) | Open / Direct HTTP 200 |
+| **বিবিসি বাংলা (BBC Bangla)** | Topic feeds matching `/bengali/articles/` | H1 tag + high-depth editorial `<p>` tags (6,000+ chars) | Open / Direct HTTP 200 |
 
 ---
 

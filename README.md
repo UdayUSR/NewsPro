@@ -23,7 +23,7 @@ NewsPro is an automated digital news platform designed for the Bangladeshi news 
      * **যুগান্তর (Jugantor)** — Cloudflare-resilient DOM extraction.
      * **টিবিএস বাংলা (TBS Bangla)** — Clean section & body extraction.
      * **বাংলানিউজ২৪ (Banglanews24)** — High-speed national, politics & economy stream.
-     * **ঢাকা পোস্ট (Dhaka Post)** — Rich editorial breaking news extraction.
+     * **বিবিসি বাংলা (BBC Bangla)** — Pristine investigative journalism & world news.
 
 2. **Strategy B: Hybrid Publishing Pipeline:**
    * **Multi-Source Clusters (2+ Outlets):** Fuses coverage from competing outlets into a single, comprehensive briefing. Automatically tagged with `🟢 সমন্বিত প্রতিবেদন (২টি উৎস)` and cites all original URLs.
