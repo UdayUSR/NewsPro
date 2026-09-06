@@ -347,30 +347,42 @@ async def api_categories():
 async def db_status():
     turso_url = os.getenv("TURSO_DATABASE_URL")
     turso_token = os.getenv("TURSO_AUTH_TOKEN")
-    err = None
-    connected = False
-    article_count = 0
-    backend = "sqlite_local"
+    turso_direct_error = None
+    turso_direct_count = None
     try:
-        from database.db import get_db
+        import libsql
+        rc = libsql.connect(turso_url, auth_token=turso_token, autocommit=True)
+        c = rc.cursor()
+        c.execute("SELECT COUNT(*) FROM articles")
+        turso_direct_count = c.fetchone()[0]
+        rc.close()
+    except Exception as e:
+        import traceback
+        turso_direct_error = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
+
+    backend = "sqlite_local"
+    current_count = 0
+    try:
+        from database.db import get_db, LibsqlConnectionWrapper
         conn = get_db()
-        if hasattr(conn, "_raw"):
+        if isinstance(conn, LibsqlConnectionWrapper):
             backend = "turso_cloud"
         cur = conn.cursor()
         cur.execute("SELECT COUNT(*) as c FROM articles")
-        article_count = cur.fetchone()["c"]
-        connected = True
+        current_count = cur.fetchone()["c"]
         conn.close()
     except Exception as e:
-        err = str(e)
+        pass
+
     return {
         "has_turso_url": bool(turso_url),
-        "url_prefix": turso_url[:15] if turso_url else None,
+        "url_prefix": turso_url[:20] if turso_url else None,
         "has_turso_token": bool(turso_token),
+        "token_len": len(turso_token) if turso_token else 0,
         "backend": backend,
-        "connected": connected,
-        "article_count": article_count,
-        "error": err
+        "current_app_count": current_count,
+        "turso_direct_count": turso_direct_count,
+        "turso_direct_error": turso_direct_error
     }
 
 
