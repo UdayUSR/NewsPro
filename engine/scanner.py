@@ -383,6 +383,41 @@ def fetch_banglanews24(limit=5, existing_urls=None):
             pass
     return articles
 
+def fetch_bbc_bangla(limit=5, existing_urls=None):
+    existing = existing_urls or set()
+    articles = []
+    candidate_urls = []
+    sections = ['', '/topics/c83plve5vmjt']
+    for sec in sections:
+        try:
+            r = SESSION.get('https://www.bbc.com/bengali' + sec, timeout=15)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for a in soup.find_all('a', href=True):
+                href = a['href'].strip()
+                if '/bengali/articles/' in href or '/bengali/news-' in href:
+                    full = href if href.startswith('http') else f"https://www.bbc.com{href}"
+                    if full not in candidate_urls and full not in existing:
+                        candidate_urls.append(full)
+        except Exception as e:
+            print(f"  [!] BBC Bangla list error: {e}")
+
+    for url in candidate_urls:
+        if len(articles) >= limit: break
+        try:
+            art_r = SESSION.get(url, timeout=15)
+            h, body, img = extract_from_html(art_r.text, url)
+            if body:
+                articles.append({
+                    'source': 'বিবিসি বাংলা',
+                    'title': h,
+                    'url': url,
+                    'body': body,
+                    'lead_image_url': img or ''
+                })
+        except Exception as e:
+            print(f"  [!] BBC Bangla art error: {e}")
+    return articles
+
 def fetch_dhaka_post(limit=5, existing_urls=None):
     existing = existing_urls or set()
     articles = []
@@ -398,8 +433,8 @@ def fetch_dhaka_post(limit=5, existing_urls=None):
                     full = href if href.startswith('http') else f"https://www.dhakapost.com{href}"
                     if 'dhakapost.com' in full and full not in candidate_urls and full not in existing:
                         candidate_urls.append(full)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  [!] Dhaka Post list error: {e}")
 
     for url in candidate_urls:
         if len(articles) >= limit: break
@@ -414,8 +449,8 @@ def fetch_dhaka_post(limit=5, existing_urls=None):
                     'body': body,
                     'lead_image_url': img or ''
                 })
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  [!] Dhaka Post art error: {e}")
     return articles
 
 def cluster_articles(all_articles):
@@ -586,6 +621,7 @@ def run_scan_and_stage(limit_per_source=8, max_single_items=6, auto_publish=Fals
         fetch_jugantor,
         fetch_tbs_bangla,
         fetch_banglanews24,
+        fetch_bbc_bangla,
         fetch_dhaka_post
     ]
     for fetcher in fetchers:

@@ -348,7 +348,7 @@ async def debug_fetch():
     import traceback
     from engine.scanner import (
         fetch_prothom_alo, fetch_kaler_kantho, fetch_jugantor,
-        fetch_tbs_bangla, fetch_banglanews24, fetch_dhaka_post
+        fetch_tbs_bangla, fetch_banglanews24, fetch_bbc_bangla, fetch_dhaka_post
     )
     fetch_results = {}
     for name, fn in [
@@ -357,6 +357,7 @@ async def debug_fetch():
         ("jugantor", fetch_jugantor),
         ("tbs_bangla", fetch_tbs_bangla),
         ("banglanews24", fetch_banglanews24),
+        ("bbc_bangla", fetch_bbc_bangla),
         ("dhaka_post", fetch_dhaka_post)
     ]:
         try:
