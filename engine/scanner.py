@@ -5,7 +5,7 @@ import re
 import html
 from datetime import datetime, timezone, timedelta
 from dotenv import load_dotenv
-from curl_cffi import requests
+import requests
 from bs4 import BeautifulSoup
 from google import genai
 from google.genai import types
@@ -24,9 +24,10 @@ from database.db import save_article, CANONICAL_CATEGORIES, get_all_ingested_url
 load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-SESSION = requests.Session(impersonate="chrome120")
+SESSION = requests.Session()
 SESSION.headers.update({
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'User-Agent': 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
     'Accept-Language': 'bn,en-US;q=0.9,en;q=0.8'
 })
 
