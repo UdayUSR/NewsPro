@@ -262,8 +262,7 @@ def init_db():
                     words = len(body.split())
                     reading_time = max(1, round(words / 180))
                     sources = item.get("sources", [])
-                    is_multi = item.get("is_multi_source", len(sources) > 1)
-                    status = item.get("status", "published")
+                    status = "published"
                     pub_at = item.get("published_at")
 
                     if pub_at:
