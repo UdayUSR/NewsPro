@@ -1,16 +1,16 @@
 # NewsPro (নিউজপ্রো)
 
-> **স্বয়ংক্রিয় বহুমুখী বাংলা সংবাদ পোর্টাল (Autonomous Multi-Source Bengali News Platform)**
+> **Autonomous Multi-Source Bengali News Platform**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-newsprolive.onrender.com-success?style=for-the-badge&logo=render)](https://newsprolive.onrender.com)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
-[![AI Engine](https://img.shields.io/badge/AI%20Engine-Gemini%202.5%20Flash-orange?style=for-the-badge&logo=google)](https://ai.google.dev)
+[![AI Engine](https://img.shields.io/badge/AI%20Engine-Gemini%203.6%20Flash-orange?style=for-the-badge&logo=google)](https://ai.google.dev)
 
 🌐 **Live Production Website:** [https://newsprolive.onrender.com](https://newsprolive.onrender.com)  
 🎛️ **Editorial Control Room:** [https://newsprolive.onrender.com/admin/login](https://newsprolive.onrender.com/admin/login)
 
-NewsPro is an automated digital news platform designed for the Bangladeshi news media landscape. It continuously ingests news from **6 major Bangladeshi newspapers**, intelligently groups duplicate breaking stories across competing outlets, synthesizes multi-perspective objective reports using **Gemini Flash (Free Tier)**, and publishes them with bulleted takeaways and transparent source citations.
+NewsPro is an automated digital news platform designed for the Bangladeshi news media landscape. It continuously ingests news from **6 major Bangladeshi newspapers**, intelligently groups duplicate breaking stories across competing outlets, synthesizes multi-perspective objective reports using **Gemini 3.6 Flash (Free Tier)**, and publishes them with bulleted takeaways and transparent source citations.
 
 ---
 
@@ -26,8 +26,8 @@ NewsPro is an automated digital news platform designed for the Bangladeshi news 
      * **বিবিসি বাংলা (BBC Bangla)** — Pristine investigative journalism & world news.
 
 2. **Strategy B: Hybrid Publishing Pipeline:**
-   * **Multi-Source Clusters (2+ Outlets):** Fuses coverage from competing outlets into a single, comprehensive briefing. Automatically tagged with `🟢 সমন্বিত প্রতিবেদন (২টি উৎস)` and cites all original URLs.
-   * **Single-Source News (Exclusive / Standalone):** Cleans up and structures single-outlet reports with 3 key takeaways, tagged with `🔵 একক উৎস (উৎস: [পত্রিকা])`.
+   * **Multi-Source Clusters (2+ Outlets):** Fuses coverage from competing outlets into a single, comprehensive briefing. Automatically tagged with `🟢 সমন্বিত প্রতিবেদন` and cites all original URLs.
+   * **Single-Source News (Exclusive / Standalone):** Cleans up and structures single-outlet reports with 3 key takeaways, tagged with `🔵 একক উৎস`.
 
 3. **Fundamental News Information Architecture:**
    * **12 Canonical Categories:** Strict editorial topics (`বাংলাদেশ`, `রাজনীতি`, `আইন ও অপরাধ`, `বাণিজ্য`, `বিশ্ব`, `খেলা`, `বিনোদন`, `শিক্ষা`, `বিজ্ঞান ও প্রযুক্তি`, `মতামত`, `চাকরি`, `জীবনযাপন`).
@@ -35,7 +35,7 @@ NewsPro is an automated digital news platform designed for the Bangladeshi news 
 
 4. **Modern, Responsive Web UI:**
    * Built with **FastAPI** + **Jinja2** + **Tailwind CSS**.
-   * High-readability Bengali typography via Google Font **Hind Siliguri**.
+   * High-readability Bengali typography via Google Fonts **Noto Sans Bengali** (with **Hind Siliguri** fallback).
    * Clean hero lead story, 2x2 top stories grid, scrollable "সর্বশেষ সংবাদ" live sidebar, and source attribution cards.
 
 ---
