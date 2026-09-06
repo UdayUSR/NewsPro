@@ -389,28 +389,29 @@ async def debug_fetch():
         except Exception as e:
             raw_tests[name] = {"error": str(e)}
 
-    std_tests = {}
-    for name, u in [
-        ("kaler_kantho", "https://www.kalerkantho.com"),
-        ("jugantor", "https://www.jugantor.com"),
-        ("janakantha", "https://www.dailyjanakantha.com"),
-        ("dhaka_tribune", "https://bangla.dhakatribune.com"),
-    ]:
-        try:
-            r = std_requests.get(u, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}, timeout=12)
-            std_tests[name] = {
-                "status": r.status_code,
-                "length": len(r.text),
-                "server": r.headers.get("server", ""),
-                "sample": r.text[:200]
-            }
-        except Exception as e:
-            std_tests[name] = {"error": str(e)}
+    ua_tests = {}
+    uas = {
+        "Googlebot": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+        "Twitterbot": "Twitterbot/1.0",
+        "TelegramBot": "TelegramBot (like TwitterBot)",
+        "LinkedInBot": "LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)",
+        "Bingbot": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+        "DuckDuckBot": "DuckDuckBot/1.0; (+http://duckduckgo.com/duckduckbot.html)",
+        "Chrome_Android": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
+    }
+    for site, u in [("janakantha", "https://www.dailyjanakantha.com"), ("dhaka_tribune", "https://bangla.dhakatribune.com")]:
+        ua_tests[site] = {}
+        for ua_name, ua_val in uas.items():
+            try:
+                r = std_requests.get(u, headers={"User-Agent": ua_val}, timeout=8)
+                ua_tests[site][ua_name] = {"status": r.status_code, "len": len(r.text)}
+            except Exception as e:
+                ua_tests[site][ua_name] = {"error": str(e)}
 
     return {
         "fetch_results": fetch_results,
         "curl_cffi_raw": raw_tests,
-        "std_requests_raw": std_tests
+        "ua_tests": ua_tests
     }
 
 
