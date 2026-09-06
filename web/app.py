@@ -389,29 +389,24 @@ async def debug_fetch():
         except Exception as e:
             raw_tests[name] = {"error": str(e)}
 
-    ua_tests = {}
-    uas = {
-        "Googlebot": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
-        "Twitterbot": "Twitterbot/1.0",
-        "TelegramBot": "TelegramBot (like TwitterBot)",
-        "LinkedInBot": "LinkedInBot/1.0 (compatible; Mozilla/5.0; Apache-HttpClient +http://www.linkedin.com)",
-        "Bingbot": "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
-        "DuckDuckBot": "DuckDuckBot/1.0; (+http://duckduckgo.com/duckduckbot.html)",
-        "Chrome_Android": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
-    }
-    for site, u in [("janakantha", "https://www.dailyjanakantha.com"), ("dhaka_tribune", "https://bangla.dhakatribune.com")]:
-        ua_tests[site] = {}
-        for ua_name, ua_val in uas.items():
-            try:
-                r = std_requests.get(u, headers={"User-Agent": ua_val}, timeout=8)
-                ua_tests[site][ua_name] = {"status": r.status_code, "len": len(r.text)}
-            except Exception as e:
-                ua_tests[site][ua_name] = {"error": str(e)}
+    alt_tests = {}
+    for site, u in [
+        ("samakal", "https://samakal.com"),
+        ("ittefaq", "https://www.ittefaq.com.bd"),
+        ("banglanews24", "https://www.banglanews24.com"),
+        ("bonikbarta", "https://bonikbarta.net"),
+        ("mzamin", "https://mzamin.com"),
+    ]:
+        try:
+            r = std_requests.get(u, headers={"User-Agent": "facebookexternalhit/1.1"}, timeout=8)
+            alt_tests[site] = {"status": r.status_code, "len": len(r.text)}
+        except Exception as e:
+            alt_tests[site] = {"error": str(e)}
 
     return {
         "fetch_results": fetch_results,
         "curl_cffi_raw": raw_tests,
-        "ua_tests": ua_tests
+        "alt_tests": alt_tests
     }
 
 
