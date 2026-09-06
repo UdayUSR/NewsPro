@@ -348,16 +348,16 @@ async def debug_fetch():
     import traceback
     from engine.scanner import (
         fetch_prothom_alo, fetch_kaler_kantho, fetch_jugantor,
-        fetch_janakantha, fetch_tbs_bangla, fetch_dhaka_tribune_bangla
+        fetch_tbs_bangla, fetch_banglanews24, fetch_dhaka_post
     )
     fetch_results = {}
     for name, fn in [
         ("prothom_alo", fetch_prothom_alo),
         ("kaler_kantho", fetch_kaler_kantho),
         ("jugantor", fetch_jugantor),
-        ("janakantha", fetch_janakantha),
         ("tbs_bangla", fetch_tbs_bangla),
-        ("dhaka_tribune", fetch_dhaka_tribune_bangla)
+        ("banglanews24", fetch_banglanews24),
+        ("dhaka_post", fetch_dhaka_post)
     ]:
         try:
             items = fn(limit=2, existing_urls=set())

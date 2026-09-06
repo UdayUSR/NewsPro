@@ -348,6 +348,76 @@ def fetch_dhaka_tribune_bangla(limit=5, existing_urls=None):
             pass
     return articles
 
+def fetch_banglanews24(limit=5, existing_urls=None):
+    existing = existing_urls or set()
+    articles = []
+    candidate_urls = []
+    sections = ['', '/national', '/politics', '/economics']
+    for sec in sections:
+        try:
+            r = SESSION.get('https://www.banglanews24.com' + sec, timeout=15)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for a in soup.find_all('a', href=True):
+                href = a['href'].strip()
+                if ('news/bd/' in href or '.details' in href) and any(c.isdigit() for c in href):
+                    full = href if href.startswith('http') else f"https://www.banglanews24.com{href}"
+                    if 'banglanews24.com' in full and full not in candidate_urls and full not in existing:
+                        candidate_urls.append(full)
+        except Exception:
+            pass
+
+    for url in candidate_urls:
+        if len(articles) >= limit: break
+        try:
+            art_r = SESSION.get(url, timeout=15)
+            h, body, img = extract_from_html(art_r.text, url)
+            if body:
+                articles.append({
+                    'source': 'বাংলানিউজ২৪',
+                    'title': h,
+                    'url': url,
+                    'body': body,
+                    'lead_image_url': img or ''
+                })
+        except Exception:
+            pass
+    return articles
+
+def fetch_dhaka_post(limit=5, existing_urls=None):
+    existing = existing_urls or set()
+    articles = []
+    candidate_urls = []
+    sections = ['', '/national', '/politics', '/economy']
+    for sec in sections:
+        try:
+            r = SESSION.get('https://www.dhakapost.com' + sec, timeout=15)
+            soup = BeautifulSoup(r.text, 'html.parser')
+            for a in soup.find_all('a', href=True):
+                href = a['href'].strip()
+                if any(sec_tag in href for sec_tag in ['/national/', '/politics/', '/economy/', '/country/', '/international/', '/sports/']) and any(c.isdigit() for c in href):
+                    full = href if href.startswith('http') else f"https://www.dhakapost.com{href}"
+                    if 'dhakapost.com' in full and full not in candidate_urls and full not in existing:
+                        candidate_urls.append(full)
+        except Exception:
+            pass
+
+    for url in candidate_urls:
+        if len(articles) >= limit: break
+        try:
+            art_r = SESSION.get(url, timeout=15)
+            h, body, img = extract_from_html(art_r.text, url)
+            if body:
+                articles.append({
+                    'source': 'ঢাকা পোস্ট',
+                    'title': h,
+                    'url': url,
+                    'body': body,
+                    'lead_image_url': img or ''
+                })
+        except Exception:
+            pass
+    return articles
+
 def cluster_articles(all_articles):
     stopwords = set([
         'ও', 'এবং', 'থেকে', 'করা', 'হয়েছে', 'হল', 'হলো', 'করে', 'বা', 'না', 
@@ -514,9 +584,9 @@ def run_scan_and_stage(limit_per_source=8, max_single_items=6, auto_publish=Fals
         fetch_prothom_alo,
         fetch_kaler_kantho,
         fetch_jugantor,
-        fetch_janakantha,
         fetch_tbs_bangla,
-        fetch_dhaka_tribune_bangla
+        fetch_banglanews24,
+        fetch_dhaka_post
     ]
     for fetcher in fetchers:
         all_articles.extend(fetcher(limit=limit_per_source, existing_urls=existing_urls))
