@@ -8,4 +8,4 @@ beautifulsoup4>=4.12.0
 requests>=2.31.0
 trafilatura>=2.0.0
 python-multipart>=0.0.9
-
+libsql>=0.1.11

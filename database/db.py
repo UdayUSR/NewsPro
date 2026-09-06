@@ -26,7 +26,114 @@ CANONICAL_CATEGORIES = [
     ("জীবনযাপন", "lifestyle", 12),
 ]
 
+TURSO_DATABASE_URL = os.getenv("TURSO_DATABASE_URL")
+TURSO_AUTH_TOKEN = os.getenv("TURSO_AUTH_TOKEN")
+
+class LibsqlRow:
+    def __init__(self, cols, values):
+        self._cols = cols
+        self._values = values
+        self._col_map = {col: i for i, col in enumerate(cols)}
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._values[key]
+        return self._values[self._col_map[key]]
+
+    def get(self, key, default=None):
+        idx = self._col_map.get(key)
+        return self._values[idx] if idx is not None else default
+
+    def keys(self):
+        return self._cols
+
+    def __iter__(self):
+        return iter(self._cols)
+
+    def __repr__(self):
+        return dict(self).__repr__()
+
+    def items(self):
+        return [(c, self._values[i]) for i, c in enumerate(self._cols)]
+
+class LibsqlCursorWrapper:
+    def __init__(self, raw_cursor):
+        self._cur = raw_cursor
+
+    def execute(self, sql, params=()):
+        self._cur.execute(sql, params)
+        return self
+
+    def executemany(self, sql, seq_of_params):
+        self._cur.executemany(sql, seq_of_params)
+        return self
+
+    def executescript(self, script):
+        self._cur.executescript(script)
+        return self
+
+    def fetchone(self):
+        val = self._cur.fetchone()
+        if val is None:
+            return None
+        cols = [d[0] for d in self._cur.description]
+        return LibsqlRow(cols, val)
+
+    def fetchall(self):
+        vals = self._cur.fetchall()
+        if not vals:
+            return []
+        cols = [d[0] for d in self._cur.description]
+        return [LibsqlRow(cols, v) for v in vals]
+
+    @property
+    def lastrowid(self):
+        return self._cur.lastrowid
+
+    @property
+    def rowcount(self):
+        return self._cur.rowcount
+
+    def close(self):
+        self._cur.close()
+
+class LibsqlConnectionWrapper:
+    def __init__(self, raw_conn):
+        self._conn = raw_conn
+
+    def cursor(self):
+        return LibsqlCursorWrapper(self._conn.cursor())
+
+    def execute(self, sql, params=()):
+        cur = self.cursor()
+        cur.execute(sql, params)
+        return cur
+
+    def executescript(self, script):
+        cur = self.cursor()
+        cur.executescript(script)
+        return cur
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+    def close(self):
+        self._conn.close()
+
 def get_db():
+    turso_url = os.getenv("TURSO_DATABASE_URL")
+    turso_token = os.getenv("TURSO_AUTH_TOKEN")
+    if turso_url and turso_token:
+        try:
+            import libsql
+            raw_conn = libsql.connect(turso_url, auth_token=turso_token)
+            return LibsqlConnectionWrapper(raw_conn)
+        except Exception as e:
+            print(f"[!] Failed to connect to Turso ({e}), falling back to local SQLite.")
+
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
