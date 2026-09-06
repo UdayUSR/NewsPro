@@ -18,12 +18,12 @@ NewsPro is an automated digital news platform designed for the Bangladeshi news 
 
 1. **Autonomous Multi-Outlet Ingestion:**
    * Scrapes and monitors 6 major portals without getting blocked:
-     * **প্রথম আলো (Prothom Alo)** — High-speed REST API & RSS.
-     * **কালের কণ্ঠ (Kaler Kantho)** — Chrome TLS impersonation (`curl_cffi`) + Schema.org metadata.
-     * **যুগান্তর (Jugantor)** — Cloudflare-bypassing DOM extraction.
-     * **জনকণ্ঠ (Janakantha)** — Structured Schema.org `NewsArticle`.
+     * **প্রথম আলো (Prothom Alo)** — High-speed REST API & section feeds.
+     * **কালের কণ্ঠ (Kaler Kantho)** — Schema.org metadata & crawler bypass.
+     * **যুগান্তর (Jugantor)** — Cloudflare-resilient DOM extraction.
      * **টিবিএস বাংলা (TBS Bangla)** — Clean section & body extraction.
-     * **ঢাকা ট্রিবিউন (Dhaka Tribune)** — Category stream extraction.
+     * **বাংলানিউজ২৪ (Banglanews24)** — High-speed national, politics & economy stream.
+     * **ঢাকা পোস্ট (Dhaka Post)** — Rich editorial breaking news extraction.
 
 2. **Strategy B: Hybrid Publishing Pipeline:**
    * **Multi-Source Clusters (2+ Outlets):** Fuses coverage from competing outlets into a single, comprehensive briefing. Automatically tagged with `🟢 সমন্বিত প্রতিবেদন (২টি উৎস)` and cites all original URLs.

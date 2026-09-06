@@ -64,12 +64,12 @@ Normal Python `requests` or `urllib` calls fail with **403 Forbidden** on Cloudf
 
 | Outlet | Discovery / URLs | Body Extraction Strategy | Bot Defense |
 | :--- | :--- | :--- | :--- |
-| **প্রথম আলো (Prothom Alo)** | REST API: `https://www.prothomalo.com/api/v1/stories` | Fetches article slug directly; extracts Schema.org `NewsArticle` from HTML | Open / No bot challenge |
-| **কালের কণ্ঠ (Kaler Kantho)** | Homepage links with numeric IDs: `/(online\|national)/\d+` | Embedded `application/ld+json` contains exact `headline` and `articleBody` | Cloudflare Turnstile (Bypassed via `curl_cffi`) |
-| **যুগান্তর (Jugantor)** | Category links: `/(national\|politics\|sports)/\d+` | H1 tag + clean `<p>` tags (excluding ads) | Cloudflare (Bypassed via `curl_cffi`) |
-| **জনকণ্ঠ (Janakantha)** | Links matching `/news/\d+` | Embedded `application/ld+json` Schema.org `NewsArticle` | Standard web (200 OK) |
-| **টিবিএস বাংলা (TBS Bangla)** | Links matching `/bangla/` and `news-details-\d+` | H1 tag + `<p>` tags (excluding boilerplate) | Standard web (200 OK) |
-| **ঢাকা ট্রিবিউন (Dhaka Tribune)** | Links matching `/bangladesh/`, `/politics/` | H1 tag + `<p>` tags (excluding sidebar) | Standard web (200 OK) |
+| **প্রথম আলো (Prothom Alo)** | REST API & sections: `/api/v1/stories`, `/bangladesh`, `/world` | Slug resolution + Schema.org / DOM `<p>` tags | Open / High-speed |
+| **কালের কণ্ঠ (Kaler Kantho)** | Homepage links with numeric IDs: `/(online\|national)/\d+` | Embedded `application/ld+json` contains exact `headline` and `articleBody` | Facebook bot crawler UA bypass |
+| **যুগান্তর (Jugantor)** | Category links: `/(national\|politics\|sports)/\d+` | H1 tag + clean `<p>` tags (excluding ads) | Facebook bot crawler UA bypass |
+| **টিবিএস বাংলা (TBS Bangla)** | Links matching `/bangla/` and `news-details` | H1 tag + `<p>` tags (excluding boilerplate) | Open / Direct HTTP 200 |
+| **বাংলানিউজ২৪ (Banglanews24)** | Category feeds matching `news/bd/` and `.details` | H1 tag + article `<p>` text tags (2,000+ chars) | Open / Direct HTTP 200 |
+| **ঢাকা পোস্ট (Dhaka Post)** | Sections matching `/(national\|politics\|economy)/\d+` | H1 tag + in-depth editorial `<p>` tags (5,000+ chars) | Open / Direct HTTP 200 |
 
 ---
 
