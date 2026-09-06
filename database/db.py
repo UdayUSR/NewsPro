@@ -141,7 +141,10 @@ def get_db():
     if turso_url and turso_token:
         try:
             import libsql
-            raw_conn = libsql.connect(turso_url, auth_token=turso_token, autocommit=True)
+            try:
+                raw_conn = libsql.connect(turso_url, auth_token=turso_token, isolation_level=None)
+            except TypeError:
+                raw_conn = libsql.connect(turso_url, auth_token=turso_token)
             return LibsqlConnectionWrapper(raw_conn)
         except Exception as e:
             print(f"[!] Failed to connect to Turso ({e}), falling back to local SQLite.")

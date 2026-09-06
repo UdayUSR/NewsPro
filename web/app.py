@@ -350,8 +350,10 @@ async def db_status():
     turso_direct_error = None
     turso_direct_count = None
     try:
-        import libsql
-        rc = libsql.connect(turso_url, auth_token=turso_token, autocommit=True)
+        try:
+            rc = libsql.connect(turso_url, auth_token=turso_token, isolation_level=None)
+        except TypeError:
+            rc = libsql.connect(turso_url, auth_token=turso_token)
         c = rc.cursor()
         c.execute("SELECT COUNT(*) FROM articles")
         turso_direct_count = c.fetchone()[0]
