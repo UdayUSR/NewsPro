@@ -68,7 +68,7 @@ class AdaptiveScheduler:
         self.task = None
 
     def is_auto_scanner_enabled(self) -> bool:
-        return get_system_setting("auto_scanner_enabled", "false").lower() == "true"
+        return get_system_setting("auto_scanner_enabled", "true").lower() == "true"
 
     def set_auto_scanner_enabled(self, enabled: bool):
         val = "true" if enabled else "false"
@@ -81,7 +81,7 @@ class AdaptiveScheduler:
             self.next_run_time = None
 
     def is_auto_publish_enabled(self) -> bool:
-        return get_system_setting("auto_publish_enabled", "false").lower() == "true"
+        return get_system_setting("auto_publish_enabled", "true").lower() == "true"
 
     def set_auto_publish_enabled(self, enabled: bool):
         val = "true" if enabled else "false"

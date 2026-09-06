@@ -32,6 +32,14 @@ def get_db():
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
+def make_slug(headline, article_id=None):
+    clean = re.sub(r'[^\w\s\u0980-\u09FF-]', '', headline)
+    clean = re.sub(r'[\s_]+', '-', clean).strip('-')
+    if len(clean) > 80:
+        clean = clean[:80].rsplit('-', 1)[0]
+    suffix = str(article_id or int(datetime.now().timestamp()))
+    return f"{clean}-{suffix[-6:]}"
+
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
@@ -79,6 +87,11 @@ def init_db():
         PRIMARY KEY (article_id, tag_id)
     );
 
+    CREATE TABLE IF NOT EXISTS system_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
+    );
+
     CREATE INDEX IF NOT EXISTS idx_articles_latest ON articles(published_at DESC);
     CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category_id, published_at DESC);
     CREATE INDEX IF NOT EXISTS idx_articles_slug ON articles(slug);
@@ -101,17 +114,76 @@ def init_db():
             (name_bn, slug, order)
         )
 
+    # Seed default system settings
+    cursor.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('auto_scanner_enabled', 'true')")
+    cursor.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES ('auto_publish_enabled', 'true')")
+
+    # If articles table is empty, auto-seed from seed_articles.json
+    cursor.execute("SELECT COUNT(*) as cnt FROM articles")
+    if cursor.fetchone()["cnt"] == 0:
+        seed_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "seed_articles.json")
+        if os.path.exists(seed_path):
+            try:
+                with open(seed_path, "r", encoding="utf-8") as f:
+                    seed_articles = json.load(f)
+
+                cat_rows = cursor.execute("SELECT id, name_bn FROM categories").fetchall()
+                cat_map = {r["name_bn"]: r["id"] for r in cat_rows}
+                default_cat_id = cat_map.get("বাংলাদেশ", 1)
+
+                for idx, item in enumerate(seed_articles):
+                    headline = item["headline"].strip()
+                    slug = make_slug(headline, idx + 1)
+                    cat_id = cat_map.get(item.get("category"), default_cat_id)
+                    takeaways_json = json.dumps(item.get("key_takeaways", []), ensure_ascii=False)
+                    body = item.get("synthesized_body", "").strip()
+                    words = len(body.split())
+                    reading_time = max(1, round(words / 180))
+                    sources = item.get("sources", [])
+                    is_multi = item.get("is_multi_source", len(sources) > 1)
+                    status = item.get("status", "published")
+                    pub_at = item.get("published_at")
+
+                    if pub_at:
+                        cursor.execute("""
+                            INSERT INTO articles (
+                                slug, headline, category_id, lead_image_url, key_takeaways,
+                                body, status, is_multi_source, source_count, reading_time_minutes, published_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (slug, headline, cat_id, item.get("lead_image_url", ""),
+                              takeaways_json, body, status, is_multi, len(sources), reading_time, pub_at))
+                    else:
+                        cursor.execute("""
+                            INSERT INTO articles (
+                                slug, headline, category_id, lead_image_url, key_takeaways,
+                                body, status, is_multi_source, source_count, reading_time_minutes
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (slug, headline, cat_id, item.get("lead_image_url", ""),
+                              takeaways_json, body, status, is_multi, len(sources), reading_time))
+
+                    art_id = cursor.lastrowid
+                    for s in sources:
+                        cursor.execute("""
+                            INSERT INTO article_sources (article_id, source_name, source_url)
+                            VALUES (?, ?, ?)
+                        """, (art_id, s.get("name", "উৎস"), s.get("url", "#")))
+
+                    for tag in item.get("tags", []):
+                        tag_clean = tag.strip()
+                        if not tag_clean:
+                            continue
+                        cursor.execute("INSERT OR IGNORE INTO tags (name) VALUES (?)", (tag_clean,))
+                        cursor.execute("SELECT id FROM tags WHERE name = ?", (tag_clean,))
+                        tag_id = cursor.fetchone()["id"]
+                        cursor.execute("INSERT OR IGNORE INTO article_tags (article_id, tag_id) VALUES (?, ?)", (art_id, tag_id))
+
+                print(f"[✓] Auto-seeded {len(seed_articles)} articles from seed_articles.json.")
+            except Exception as e:
+                print(f"[!] Error auto-seeding articles: {e}")
+
     conn.commit()
     conn.close()
     print("[✓] Database initialized and canonical categories seeded.")
-
-def make_slug(headline, article_id=None):
-    clean = re.sub(r'[^\w\s\u0980-\u09FF-]', '', headline)
-    clean = re.sub(r'[\s_]+', '-', clean).strip('-')
-    if len(clean) > 80:
-        clean = clean[:80].rsplit('-', 1)[0]
-    suffix = str(article_id or int(datetime.now().timestamp()))
-    return f"{clean}-{suffix[-6:]}"
 
 def save_article(data, status="draft"):
     """
