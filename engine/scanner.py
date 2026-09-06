@@ -33,7 +33,7 @@ SESSION.headers.update({
 
 CATEGORIES_LIST = ", ".join(f'"{c[0]}"' for c in CANONICAL_CATEGORIES if c[1] != "latest")
 
-def is_article_too_old(date_str, max_hours=24):
+def is_article_too_old(date_str, max_hours=12):
     """Returns True if the publication date is strictly older than max_hours."""
     if not date_str:
         return False
@@ -42,9 +42,10 @@ def is_article_too_old(date_str, max_hours=24):
         if clean.endswith('Z'):
             clean = clean[:-1] + '+00:00'
         if len(clean) == 10 and clean.count('-') == 2:
-            d = datetime.strptime(clean, '%Y-%m-%d').date()
-            now_bd = datetime.now(timezone(timedelta(hours=6))).date()
-            return (now_bd - d).days > 1
+            dt = datetime.strptime(clean, '%Y-%m-%d').replace(hour=23, minute=59, second=59, tzinfo=timezone(timedelta(hours=6)))
+            now_utc = datetime.now(timezone.utc)
+            diff_hours = (now_utc - dt.astimezone(timezone.utc)).total_seconds() / 3600.0
+            return diff_hours > max_hours
         dt = datetime.fromisoformat(clean)
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone(timedelta(hours=6)))
@@ -54,8 +55,8 @@ def is_article_too_old(date_str, max_hours=24):
     except Exception:
         return False
 
-def extract_from_html(resp_text, url, max_age_hours=24):
-    """Extracts headline, clean comprehensive body, and lead image from HTML, dropping articles >24h old."""
+def extract_from_html(resp_text, url, max_age_hours=12):
+    """Extracts headline, clean comprehensive body, and lead image from HTML, dropping articles >12h old."""
     # 0. URL Date check (e.g. /YYYY/MM/DD/)
     m = re.search(r'/(\d{4})/(\d{2})/(\d{2})/', url)
     if m:
@@ -110,7 +111,7 @@ def extract_from_html(resp_text, url, max_age_hours=24):
     time_tag = soup.find('time')
     time_date = time_tag.get('datetime') if time_tag else None
 
-    # 24-Hour freshness gate
+    # 12-Hour freshness gate
     pub_date = ld_date or meta_date or time_date
     if pub_date and is_article_too_old(pub_date, max_hours=max_age_hours):
         return None, None, None
